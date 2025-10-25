@@ -1,3 +1,7 @@
+# Dear next programmer 
+# when i coded this stupid piece of code , only god and his avatars know hos it works and i am not one of them and assuming you are a human as i am you cant understand this code too , pray to chatgpt gods to help you run and understand this code :p
+
+
 # ONL9vet Doctor - Veterinary Telemedicine App
 
 A comprehensive Flutter-based telemedicine application designed specifically for veterinary professionals to provide remote consultations, manage appointments, and maintain patient records.
