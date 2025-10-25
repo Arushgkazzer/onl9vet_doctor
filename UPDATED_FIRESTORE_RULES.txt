@@ -1,0 +1,83 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ========================
+    // Appointments
+    // ========================
+    match /appointments/{appointmentId} {
+      // Anyone can create an appointment (patients)
+      allow create: if true;
+
+      // Only authenticated users can read/update/delete appointments
+      allow read, update, delete: if request.auth != null;
+
+      // ========================
+      // Messages inside appointments
+      // ========================
+      match /messages/{messageId} {
+        // Only authenticated users can read/write messages
+        allow read, write: if request.auth != null;
+
+        // Optional: restrict to participants only (uncomment if needed)
+        // allow read, write: if request.auth != null &&
+        //    request.auth.uid in resource.data.participants;
+      }
+    }
+
+    // ========================
+    // CHATS COLLECTION - MISSING IN YOUR RULES!
+    // ========================
+    match /chats/{chatId} {
+      // Allow authenticated users to read/write chat documents
+      allow read, write: if request.auth != null;
+      
+      // Messages within chats
+      match /messages/{messageId} {
+        // Allow authenticated users to read/write messages
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    // ========================
+    // Doctor Notifications
+    // ========================
+    match /doctor_notifications/{notificationId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ========================
+    // User Profiles
+    // ========================
+    match /users/{userId} {
+      // Users can only read/write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow authenticated users to read doctor profiles for booking
+      allow read: if request.auth != null && 
+                     resource != null && 
+                     resource.data.role == 'doctor';
+    }
+
+    // ========================
+    // User Settings
+    // ========================
+    match /user_settings/{userId} {
+      // Users can only read/write their own settings
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ========================
+    // Doctors Collection (Alternative approach)
+    // ========================
+    match /doctors/{doctorId} {
+      // Allow authenticated users to read doctor profiles for booking
+      allow read: if request.auth != null;
+      
+      // Only admins or the doctor themselves can write
+      allow write: if request.auth != null && 
+                      (request.auth.uid == doctorId || 
+                       (request.auth.token != null && request.auth.token.role == 'admin'));
+    }
+  }
+}

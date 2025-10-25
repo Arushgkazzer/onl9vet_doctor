@@ -228,10 +228,47 @@ class FirebaseAppointmentService {
       await _firestore
           .collection('appointments')
           .doc(appointmentId)
-          .update(updates);
+          .update({
+            ...updates,
+            'updated_at': FieldValue.serverTimestamp(),
+          });
       return true;
     } catch (e) {
       print('Error updating appointment details: $e');
+      return false;
+    }
+  }
+
+  // Mark chat as completed and keep in history
+  Future<bool> completeChatSession(String appointmentId, Map<String, dynamic> prescriptionData) async {
+    if (!isAuthenticated) return false;
+    
+    try {
+      // Update appointment status and add prescription
+      await _firestore
+          .collection('appointments')
+          .doc(appointmentId)
+          .update({
+            'status': 'completed',
+            'prescription': prescriptionData,
+            'chat_ended_at': FieldValue.serverTimestamp(),
+            'completed_by': currentUserId,
+            'updated_at': FieldValue.serverTimestamp(),
+          });
+      
+      // Mark chat as completed but keep messages for history
+      await _firestore
+          .collection('chats')
+          .doc(appointmentId)
+          .set({
+            'status': 'completed',
+            'completed_at': FieldValue.serverTimestamp(),
+            'completed_by': currentUserId,
+          }, SetOptions(merge: true));
+      
+      return true;
+    } catch (e) {
+      print('Error completing chat session: $e');
       return false;
     }
   }
